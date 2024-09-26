@@ -1,0 +1,83 @@
+<html>
+<head>
+<title>AutoRemote Options</title>
+<style type="text/css">
+.okdevice
+{
+	background-color:#99FFCC;
+	margin: 15px;
+}
+.baddevice
+{
+	background-color:#FF9999;
+}
+.rule
+{
+	background-color:#DDDDDD;
+	margin: 10px;
+	padding: 5px;
+}
+.segment
+{
+	border:1px solid black;
+	padding: 10px;
+	margin: 10px;
+}
+
+</style>
+	<!--<script src="https://www.gstatic.com/firebasejs/5.9.1/firebase-app.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/5.9.1/firebase-messaging.js"></script>
+	<script src="fcm.js"></script>-->
+<script src="urls.js"></script>
+<script src="options.js"></script>
+</head>
+<body>
+<div id="personalUrlSection">
+<h4 id="personalUrlExplanation" style="display:none;">This is your personal URL for Chrome.</h4>
+<h2><a id="personalUrl"></a></h2>
+</div>
+<h2>Right click on pages, links or text selections to use these actions.</h2>
+<button id="buttonSave">Save Options</button>
+<div id="optionsSegment" class="segment">
+	<h3>Options: </h3>
+	<!--Name for this extension: <input type="text" id="chromeName" /> <br/> -->
+	<input type="checkbox" id="checkBoxShowNotifications" />Show Non-System Alerts<br/>
+	<input type="checkbox" id="checkBoxShowNotificationsSystem" />Show System Alerts<br/>
+	<input type="checkbox" id="checkBoxShowNotificationsActions" />Show Alerts for Notification Button/Action Messages<br/>
+	<input type="checkbox" id="checkBoxAutoHideNotificationsReceived" />Auto clear received Notifications (Chrome always hides them, but they are accessible in the notification list)<br/>	
+	<input type="checkbox" id="checkBoxAutoHideNotifications" />Auto clear Notifications other than received (Chrome always hides them, but they are accessible in the notification list)<br/>
+	EventGhost port on this computer (1818 is the default):<input type="text" id="textBoxRedirectPort" /><br/>
+	<input type="checkbox" id="checkBoxRedirectAllMessages" />Redirect All Messages to EventGhost<br/>
+	<h3>Cortana options: </h3>
+	<input type="checkbox" id="checkBoxSendCortanaCommands" />Send Cortana Commands<br/>
+	<input type="checkbox" id="checkBoxCloseCortanaCommands" />Close tab after Cortana Command<br/>
+	<!-- Message to send when Chrome is opened and the AutoRemote Extension is loaded:<input type="text" id="textBoxStartupMessage" /><br/> -->
+	<button id="buttonSave2">Save</button>
+</div>
+<div id="devicesSegment" class="segment">
+	<h3>Add Device:</h3>
+	Device Name:
+	<input type="text" id="deviceName"/>
+	Device Short Personal Url (e.g. goo.gl/XxXxX)
+	<input type="text" id="deviceUrl"/>
+	Password:
+	<input type="password" id="devicePassword"/>
+	<button id="buttonAddDevice">Add Device</button>
+	<h3>Existing Devices:</h3>
+	<input type="button" id="buttonRefreshRegistrations" value="Register Chrome on Devices"/>
+	<h4>Cortana commands only work on Windows 10. Make sure Chrome is set as your default browser. Import <a href="http://joaoapps.com/autovoiceiosfiles/Remote_AutoVoice.prf.xml">this</a> profile in Tasker to use Cortana commands with AutoVoice.</h4>
+	<div id="optionsDevicesContainer"></div>
+</div>
+<div id="rulesSegment" class="segment">
+	<button id="buttonAdd">Add Command</button>
+	<div id="optionsContainer">
+</div>
+<div id="testSegment" class="segment">
+	<h3>Test Message</h3>
+	<textarea cols="80" rows="10" id="testMessage"></textarea>
+	<button id="buttonTest">Test</button>
+</div>
+<button id="buttonSave1">Save Options</button>
+<div id="status" name="status" />
+</body>
+</html>
