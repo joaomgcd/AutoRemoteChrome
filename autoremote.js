@@ -350,13 +350,18 @@ function base64ArrayBuffer(arrayBuffer) {
         });
 
     }
-    function getGCMToken(){
-        return new Promise((accept,reject)=>{
-            chrome.gcm.register(["147354672683"],token=>accept(token));
+    const getInstanceIdToken = senderId => {
+        return new Promise((resolve,reject)=>{
+            chrome.instanceID.getToken({"authorizedEntity":senderId,"scope":"GCM"},resolve);
         });
     }
+    // function getGCMToken(){
+    //     return new Promise((accept,reject)=>{
+    //         chrome.gcm.register(["147354672683"],token=>accept(token));
+    //     });
+    // }
     async function registerGCM(callback){
-        const registrationId = await getGCMToken();
+        const registrationId = await getInstanceIdToken("147354672683");
         if (registrationId == null || registrationId == "") {
             if (callback != null) {
                 console.log("Error getting key: " + chrome.runtime.lastError.message);
