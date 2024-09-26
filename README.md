@@ -1,0 +1,2 @@
+# AutoRemoteChrome
+ AutoRemote Chrome Extension
