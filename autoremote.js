@@ -1,35 +1,43 @@
 //const fcm = new FCM();
 var autoremoteserver = "http://autoremotejoaomgcd.appspot.com";
-
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    console.log("Got message", message, sender);
+});
 function getURLParameter(url, name) {
     return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(url) || [, ""])[1].replace(/\+/g, '%20')) || null
 }
-chrome.webRequest.onBeforeRequest.addListener(function (details) {
+// chrome.webRequest.onBeforeRequest.addListener(function(details) {
 
-    var form = getURLParameter(details.url, "form");
-    if (!form) {
-        form = getURLParameter(details.url, "FORM");
-    }
-    if (form != "WNSBOX" && form != "WNSHCO" && form != "WNSSCX" && form != "WNSSSV") {
-        console.log(query + " not from voice command");
-        return;
-    }
-    var query = getURLParameter(details.url, "q");
-    if (query.endsWith(".")) {
-        query = query.substring(0, query.length - 1);
-    }
-    console.log("from cortana: " + query);
-    var myId = getMyId();
-    if (localStorage["sendCortanaCommands"] == "true") {
-        sendAutoVoiceMessage(query);
-    }
-    if (localStorage["closeCortanaCommands"] == "true") {
-        console.log("Closing cortana tab");
-        chrome.tabs.remove(details.tabId);
-    }
+//     var form = getURLParameter(details.url,"form");
+//     if(!form){
+//         form = getURLParameter(details.url,"FORM");
+//     }
+//     if(form != "WNSBOX" && form != "WNSHCO" && form != "WNSSCX" && form != "WNSSSV"){
+//         console.log(query + " not from voice command");
+//         return;
+//     }
+// 	var query = getURLParameter(details.url,"q");
+// 	if(query.endsWith(".")){
+// 		query = query.substring(0,query.length-1);
+// 	}
+// 	console.log("from cortana: " + query);
+// 	var myId = getMyId();
+// 	if(localStorage["sendCortanaCommands"] == "true"){
+// 		sendAutoVoiceMessage(query);
+// 	}
+// 	if(localStorage["closeCortanaCommands"] == "true"){
+// 		console.log("Closing cortana tab");
+// 		chrome.tabs.remove(details.tabId);	
+// 	}
 
-}, { urls: ["*://www.bing.com/search*&*=WNS*"] }, ["blocking"]);
+// }, {urls: ["*://www.bing.com/search*&*=WNS*"]}, ["blocking"]);
 chrome.commands.onCommand.addListener(function (command) {
+    chrome.tabs.create({
+        'url': "chrome-extension://hglmpnnkhfjpnoheioijdpleijlmfcfb/options.html"
+    }, function (tab) {
+        console.log(tab)
+    });
+    console.log("Got shortcut command", command);
     var index = parseInt(command) - 1;
     if (index < optionsArray.length) {
         var arCommand = optionsArray[index];
@@ -42,6 +50,7 @@ chrome.commands.onCommand.addListener(function (command) {
         }
     }
 });
+
 var sendAutoVoiceMessage = function (message) {
     doForDevices(function (device) {
         if (device.cortana) {
@@ -204,14 +213,9 @@ function certifyChromeNameSet() {
     }
 }
 
-function getMyQrCode(callback) {
-    getMyUrl(function (myUrl) {
-        if (myUrl != null) {
-            callback("https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=" + myUrl);
-        } else {
-            callback(null);
-        }
-    });
+async function getMyQrCode() {
+    const myUrl = await getMyUrlAsync();
+    return "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + myUrl;
 }
 
 var shortenUrl = function (url, callback) {
@@ -321,7 +325,18 @@ function GUID() {
 
     return S4() + S4() + S4();
 }
-
+async function getMyUrlAsync() {
+    const result = await new Promise((accept, reject) => {
+        getMyUrl((url) => {
+            if (url) {
+                accept(url);
+            } else {
+                reject("Can't get URL");
+            }
+        });
+    });
+    return result;
+}
 function getMyUrl(callback) {
     var storedUrl = localStorage["personalurl"];
     if (storedUrl == null || storedUrl == "http://goo.gl/392otF") {
@@ -350,13 +365,17 @@ function updateRegIdOnServer(firstId, currentId) {
     });
 
 }
-function getGCMToken() {
-    return new Promise((accept, reject) => {
-        chrome.gcm.register(["147354672683"], token => accept(token));
-    });
+const getInstanceIdToken = async senderId => {
+    return await chrome.instanceID.getToken({ "authorizedEntity": senderId, "scope": "GCM" });
 }
+// function getGCMToken(){
+//     return new Promise((accept,reject)=>{
+//         chrome.gcm.register(["147354672683"],token=>accept(token));
+//     });
+// }
 async function registerGCM(callback) {
-    const registrationId = await getGCMToken();
+    const registrationId = await getInstanceIdToken("147354672683");
+    console.log("offscreen page got registration", registrationId);
     if (registrationId == null || registrationId == "") {
         if (callback != null) {
             console.log("Error getting key: " + chrome.runtime.lastError.message);
@@ -433,6 +452,13 @@ function getMyId(callback) {
     return storedId;
 
 }
+async function getUniqueUrlAsync() {
+    return await new Promise((resolve, reject) => {
+        getUniqueUrl(url => {
+            resolve(url)
+        })
+    });
+}
 function getUniqueUrl(callback) {
     resetMyIds();
     getMyUrl(callback);
@@ -499,7 +525,6 @@ function getExistingDevices() {
 function setExistingDevices(devices) {
     localStorage["devices"] = JSON.stringify(devices);
 }
-
 function getForDevice(key, func) {
     var existingDevices = getExistingDevices();
     for (var i = 0; i < existingDevices.length; i++) {
@@ -541,57 +566,15 @@ function sendMessage(device, option, message) {
     }
     m.sender = getMyId();
     m.send();
-    /*getMyId(function(myId){
-    if(optionsArray[i].dontSendText)
-    {
-        message = optionsArray[i].command;
-    }
-    else
-    {
-        message = optionsArray[i].command + "=:=" + message;
-    }
-    var key = optionsArray[i].key;
-    var target = optionsArray[i].target;
-    var password = getForDevice(key, function(device)
-    {
-        return device.password;
-    });
-    var urlToCall = autoremoteserver+"/sendmessage?message=" + encodeURIComponent(message) + "&key=" + key + "&sender=" + myId;
-    if(password != null && password != "") urlToCall = urlToCall + "&password=" + password;
-    if(target != null && target != "") urlToCall = urlToCall + "&target=" + target;
-    var req = new XMLHttpRequest();
 
-    req.open("GET", urlToCall, true);
-    notify("Sending message...", "Connecting...");
-    req.onreadystatechange = function()
-    {
-        if(req.readyState == 4 && req.status == 200)
-        {
-            var title = null;
-            var description = null;
-            if(req.responseText == "OK")
-            {
-                title = "Message Sent to " + optionsArray[i].name + "!";
-                description = message;
-            }
-            else
-            {
-                title = "Message NOT Sent!";
-                description = req.responseText;
-            }
-            notify(title, description);
-        }
-    };
-    req.send(null);
-});
-*/
 }
 
 function sendLinkToAutoRemote(device, link) {
     getMyId(function (myId) {
         var req = new XMLHttpRequest();
         notify("Sending link...", "Connecting...", true);
-        req.open("GET", autoremoteserver + "/sendintent?intent=" + encodeURIComponent(link) + "&key=" + device.key + "&sender=" + myId, true);
+        const url = autoremoteserver + "/sendintent?intent=" + encodeURIComponent(link) + "&key=" + device.key + "&sender=" + myId
+        req.open("GET", url, true);
         req.onreadystatechange = function () {
             if (req.readyState == 4 && req.status == 200) {
                 var title = null;
@@ -687,15 +670,21 @@ function updatemenu() {
         "context": "audio"
     }];
     var funcs = [];
+    const buildFuncId = (func, device, item) => {
+        return JSON.stringify({ func, device, item })
+    };
     for (var i = 0; i < contexts.length; i++) {
         var context = contexts[i];
         doForDevices(function (device) {
             var func = null;
+            var funcId = null;
             if (context == "page") {
                 func = sendPageAsLink(device);
+                funcId = buildFuncId("sendPageAsLink", device);
             }
             if (context == "link") {
                 func = sendLink(device);
+                funcId = buildFuncId("sendLink", device);
             }
             if (func != null) {
                 func = {
@@ -706,6 +695,7 @@ function updatemenu() {
                 func.name = device.name;
                 func.dontSendText = false;
                 func.sendSelectedFile = false;
+                func.id = funcId;
                 funcs.push(func);
             }
         });
@@ -719,21 +709,27 @@ function updatemenu() {
                 var func = null;
                 if (context == "selection") {
                     func = sendText(device, item);
+                    funcId = buildFuncId("sendText", device, item);
                 }
                 if (context == "image") {
                     func = sendImage(device, item);
+                    funcId = buildFuncId("sendImage", device, item);
                 }
                 if (context == "video") {
                     func = sendVideo(device, item);
+                    funcId = buildFuncId("sendVideo", device, item);
                 }
                 if (context == "audio") {
                     func = sendAudio(device, item);
+                    funcId = buildFuncId("sendAudio", device, item);
                 }
                 if (context == "page") {
                     func = sendPage(device, item);
+                    funcId = buildFuncId("sendPage", device, item);
                 }
                 if (context == "link") {
                     func = sendLinkAsMessage(device, item);
+                    funcId = buildFuncId("sendLinkAsMessage", device, item);
                 }
                 if (func != null) {
                     func = {
@@ -745,6 +741,7 @@ function updatemenu() {
                     func.name = item.name;
                     func.dontSendText = dontSendText;
                     func.sendSelectedFile = sendSelectedFile;
+                    func.id = funcId;
                     funcs.push(func);
                 }
             }
@@ -766,14 +763,21 @@ var createMenuFromFuncs = function (funcs) {
         if (func.customtext != null && func.customtext != "") {
             title = func.customtext;
         }
-        chrome.contextMenus.create({
-            "title": title,
-            "contexts": [func.context],
-            "onclick": func.func
-        });
+        const id = func.id;
+        if (id) {
+            chrome.contextMenus.create({
+                "title": title,
+                "contexts": [func.context],
+                "id": id
+            });
+        }
     }
 }
-
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+    const { func, device, item } = JSON.parse(info.menuItemId);
+    self[func](device, item)(info, tab);
+    console.log("Clicked context menu", func, device, item, info, tab);
+})
 function handleAutoRemoteCommandMessageToPort(message, port) {
     doPost("http://localhost:" + port + "/", message, function (response) {
         alert(response);
@@ -1536,9 +1540,9 @@ updatemenu();
 syncSettings();
 chrome.storage.onChanged.addListener(function () {
     restoreSettingsFromSync(function () {
-        if (syncChangedCallback) {
-            syncChangedCallback();
-        }
+        // if (syncChangedCallback) {
+        //     syncChangedCallback();
+        // }
     });
 });
 var handleMessage = function (message) {
