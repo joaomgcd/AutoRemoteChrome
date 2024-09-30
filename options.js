@@ -1,4 +1,4 @@
-chrome.extension.getBackgroundPage().syncChangedCallback = function() {
+chrome.extension.getBackgroundPage().syncChangedCallback = function () {
     restore_options();
 }
 /*const init = async ()=>{
@@ -8,7 +8,7 @@ chrome.extension.getBackgroundPage().syncChangedCallback = function() {
     console.log("Token: " + token);
 }
 init();*/
-var createElement = function(parent, tag, id, attributes) {
+var createElement = function (parent, tag, id, attributes) {
     var el = document.createElement(tag);
     el.setAttribute('id', id);
     if (attributes !== undefined) {
@@ -27,65 +27,65 @@ var createElement = function(parent, tag, id, attributes) {
     return el;
 }
 
-    function getMyName() {
-        if (localStorage["name"] == null) {
-            localStorage["name"] = "Chrome";
+function getMyName() {
+    if (localStorage["name"] == null) {
+        localStorage["name"] = "Chrome";
+    }
+    return localStorage["name"];
+}
+
+function setMyName(name) {
+    localStorage["name"] = name;
+}
+
+function save_options() {
+    setChromeNameOption();
+    setPortForward();
+    var optionsArray = new Array();
+    for (var count = 0; count < countExistingOptions; count++) {
+        var key = document.getElementById("key" + count);
+        var name = document.getElementById("name" + count);
+        var combo = document.getElementById("select" + count);
+        if (combo.value != null && combo.value != "") {
+            key = combo.value;
+            name = combo.options[combo.selectedIndex].text;
+        } else if (key != null) {
+            key = key.value;
+            name = name.value;
         }
-        return localStorage["name"];
-    }
-
-    function setMyName(name) {
-        localStorage["name"] = name;
-    }
-
-    function save_options() {
-        setChromeNameOption();
-        setPortForward();
-        var optionsArray = new Array();
-        for (var count = 0; count < countExistingOptions; count++) {
-            var key = document.getElementById("key" + count);
-            var name = document.getElementById("name" + count);
-            var combo = document.getElementById("select" + count);
-            if (combo.value != null && combo.value != "") {
-                key = combo.value;
-                name = combo.options[combo.selectedIndex].text;
-            } else if (key != null) {
-                key = key.value;
-                name = name.value;
-            }
-            var item = {
-                command: document.getElementById("command" + count).value,
-                commandname: document.getElementById("commandname" + count).value,
-                customtext: document.getElementById("customtext" + count).value,
-                target: document.getElementById("target" + count).value,
-                key: key,
-                name: name,
-                dontSendText: document.getElementById("dontsendtext" + count).checked,
-                sendSelectedFile: document.getElementById("sendselectedfile" + count).checked
-            }
-            if (item.command != null && item.command != "") {
-                optionsArray.push(item);
-            }
-            //	if(command == null || command.value == "" || command.value == null)break;
-
-            //  localStorage["command" + count] = command.value;
-            //  localStorage["commandname" + count] = commandname.value;
-            //  localStorage["regId" + count] = key.value;
-            //  localStorage["name" + count] = name.value;
-
+        var item = {
+            command: document.getElementById("command" + count).value,
+            commandname: document.getElementById("commandname" + count).value,
+            customtext: document.getElementById("customtext" + count).value,
+            target: document.getElementById("target" + count).value,
+            key: key,
+            name: name,
+            dontSendText: document.getElementById("dontsendtext" + count).checked,
+            sendSelectedFile: document.getElementById("sendselectedfile" + count).checked
         }
+        if (item.command != null && item.command != "") {
+            optionsArray.push(item);
+        }
+        //	if(command == null || command.value == "" || command.value == null)break;
 
-        localStorage["items"] = JSON.stringify(optionsArray);
+        //  localStorage["command" + count] = command.value;
+        //  localStorage["commandname" + count] = commandname.value;
+        //  localStorage["regId" + count] = key.value;
+        //  localStorage["name" + count] = name.value;
 
-        // Update status to let user know options were saved.
-        var status = document.getElementById("status");
-        status.innerHTML = "Options Saved.";
-        setTimeout(function() {
-            status.innerHTML = "";
-        }, 750);
-        chrome.extension.getBackgroundPage().updatemenu();
-        chrome.extension.getBackgroundPage().saveSettingsToSync();
     }
+
+    localStorage["items"] = JSON.stringify(optionsArray);
+
+    // Update status to let user know options were saved.
+    var status = document.getElementById("status");
+    status.innerHTML = "Options Saved.";
+    setTimeout(function () {
+        status.innerHTML = "";
+    }, 750);
+    chrome.extension.getBackgroundPage().updatemenu();
+    chrome.extension.getBackgroundPage().saveSettingsToSync();
+}
 var countExistingOptions = 0;
 
 async function restore_options() {
@@ -237,7 +237,7 @@ async function createDevice(event, deviceName, deviceUrl, deviceKey, devicePassw
         outterContainer.appendChild(container);
 
         if (keyValue == null) {
-            try{
+            try {
                 const longUrl = await URLShortener.expand(urlValue);
                 if (longUrl) {
                     deviceInList.appendChild(document.createTextNode(' : OK : '));
@@ -246,12 +246,12 @@ async function createDevice(event, deviceName, deviceUrl, deviceKey, devicePassw
                     addDevice(nameValue, urlValue, keyValue, passwordValue);
                     addDeleteDeviceButton(deviceInList, keyValue);
                     addSendCortanaCommandsCheckbox(deviceInList, keyValue);
-                //registerOnDevice(keyValue);
+                    //registerOnDevice(keyValue);
                 } else {
                     container.setAttribute('class', 'baddevice');
                     deviceInList.appendChild(document.createTextNode(' : Wrong URL : '));
                 }
-            }catch(error){
+            } catch (error) {
                 container.setAttribute('class', 'baddevice');
                 deviceInList.appendChild(document.createTextNode(' : Error Checking URL : '));
             }
@@ -271,7 +271,7 @@ function addDeleteDeviceButton(container, keyValue) {
     //delete button
     var deleteButtonLabel = document.createTextNode("Delete");
     var buttonDelete = document.createElement('button');
-    buttonDelete.onclick = function() {
+    buttonDelete.onclick = function () {
         deleteDevice(keyValue);
     }
     buttonDelete.appendChild(deleteButtonLabel);
@@ -281,15 +281,15 @@ function addSendCortanaCommandsCheckbox(container, keyValue) {
     //cortana option
     var checkboxLabel = document.createTextNode("Send Cortana commands");
     var checkbox = document.createElement('input');
-    checkbox.type="checkbox";
-    var checked = getForDevice(keyValue,function(device){
+    checkbox.type = "checkbox";
+    var checked = getForDevice(keyValue, function (device) {
         return device.cortana;
     });
     checkbox.checked = checked;
-    checkbox.onclick = function(){
-        getForDeviceAndSave(keyValue, function(device){            
-                console.log("Checked cortana for " + device.name + ": " + checkbox.checked);
-                device.cortana = checkbox.checked;
+    checkbox.onclick = function () {
+        getForDeviceAndSave(keyValue, function (device) {
+            console.log("Checked cortana for " + device.name + ": " + checkbox.checked);
+            device.cortana = checkbox.checked;
         });
     }
     container.appendChild(document.createElement('br'));
@@ -418,11 +418,11 @@ function registerOnDevice(regId) {
     chrome.extension.getBackgroundPage().getForDevice(regId, chrome.extension.getBackgroundPage().registerOnDevice);
 }
 
-function getForDevice(regId,func){
-    return  chrome.extension.getBackgroundPage().getForDevice(regId, func);
+function getForDevice(regId, func) {
+    return chrome.extension.getBackgroundPage().getForDevice(regId, func);
 }
-function getForDeviceAndSave(regId,func){
-    return  chrome.extension.getBackgroundPage().getForDeviceAndSave(regId, func);
+function getForDeviceAndSave(regId, func) {
+    return chrome.extension.getBackgroundPage().getForDeviceAndSave(regId, func);
 }
 
 function registerAllDevices() {
@@ -435,10 +435,10 @@ function registerAllDevices() {
 function testMessage() {
     var payload = document.getElementById('testMessage').value;
     var contents = null;
-    if(payload.indexOf("{") < 0){
-        contents = {"message" : payload};
-    }else{
-        contents = {"request" : payload};
+    if (payload.indexOf("{") < 0) {
+        contents = { "message": payload };
+    } else {
+        contents = { "request": payload };
     }
     var data = {
         "data": contents
@@ -457,7 +457,7 @@ function importCommands() {
     }
     restore_options();
 }
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', async function () {
     await restore_options();
     document.getElementById('buttonSave').addEventListener('click', save_restore_options);
     document.getElementById('buttonSave1').addEventListener('click', save_restore_options);
@@ -478,14 +478,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     setPersonalUrl();
 });
 
-function setPersonalUrl(){
-    chrome.extension.getBackgroundPage().getMyUrl(function(url) {
+function setPersonalUrl() {
+    chrome.extension.getBackgroundPage().getMyUrl(function (url) {
         var personalUrlEl = document.getElementById('personalUrl');
         var personalUrlExplanationEl = document.getElementById('personalUrlExplanation');
         personalUrlExplanationEl.style.display = "block";
         personalUrlEl.setAttribute("href", url);
         personalUrlEl.innerHTML = url;
-        chrome.extension.getBackgroundPage().getMyQrCode(function(myQrCode) {
+        chrome.extension.getBackgroundPage().getMyQrCode(function (myQrCode) {
             var personalUrlSection = document.getElementById('personalUrlSection');
             if (myQrCode != null) {
                 createElement(personalUrlSection, "img", "personalQr", {
@@ -500,8 +500,8 @@ function setPersonalUrl(){
             }
             var id = chrome.extension.getBackgroundPage().getIdFromLocalStorage();
             var idGcm = chrome.extension.getBackgroundPage().getIdGCMFromLocalStorage();
-            if(idGcm != null && id != idGcm){
-                var divGetUniqueURl = createElement(personalUrlSection, "div", "uniqueUrlSection",{
+            if (idGcm != null && id != idGcm) {
+                var divGetUniqueURl = createElement(personalUrlSection, "div", "uniqueUrlSection", {
                     "style": "font-family:arial;color:darkyellow;font-size:20px;border:1px solid black;padding:15px;"
                 });
                 divGetUniqueURl.appendChild(document.createTextNode("AutoRemote Chrome Extension now supports different personal URLs on different PCs for the same account."));
@@ -510,9 +510,9 @@ function setPersonalUrl(){
                 createElement(divGetUniqueURl, "br");
                 divGetUniqueURl.appendChild(document.createTextNode("Click below to give this PC a unique personal URL."));
                 createElement(divGetUniqueURl, "br");
-                var buttonGetUniqueUrl = createElement(divGetUniqueURl, "input", "buttonGetUniqueUrl", {"type":"button","value":"Get Unique URL","style":"margin:25px;font-size:20px;"});
-                buttonGetUniqueUrl.onclick = function(){
-                    chrome.extension.getBackgroundPage().getUniqueUrl(function(){
+                var buttonGetUniqueUrl = createElement(divGetUniqueURl, "input", "buttonGetUniqueUrl", { "type": "button", "value": "Get Unique URL", "style": "margin:25px;font-size:20px;" });
+                buttonGetUniqueUrl.onclick = function () {
+                    chrome.extension.getBackgroundPage().getUniqueUrl(function () {
                         alert("Ok, you now have a unique personal URL!");
                         window.location.reload();
                     });
@@ -541,7 +541,7 @@ function createOptionsEntry(evt, i) {
     var deviceLabel = document.createTextNode("Device:");
     var selectDevice = document.createElement("select");
     selectDevice.setAttribute('id', 'select' + i);
-    doForDevices(function(device) {
+    doForDevices(function (device) {
         var deviceOption = document.createElement("option");
         deviceOption.text = device.name;
         deviceOption.value = device.key;
@@ -626,7 +626,7 @@ function createOptionsEntry(evt, i) {
     //delete button
     var deleteButtonLabel = document.createTextNode("Delete");
     var buttonDelete = document.createElement('button');
-    buttonDelete.onclick = function() {
+    buttonDelete.onclick = function () {
         commandInput.value = "";
         save_options();
         restore_options();
