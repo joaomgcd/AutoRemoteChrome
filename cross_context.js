@@ -22,7 +22,7 @@ class CrossContext {
         if (listenersForCall == null) return;
 
         listenersForCall.forEach(listener => {
-            console.log("Calling foreground listener", self, call, listener);
+            // console.log("Calling foreground listener", self, call, listener);
             listener(...input)
         });
     }
@@ -43,12 +43,12 @@ class CrossContext {
 
         const removeListenerFunction = CrossContext.#getBackgroundFunctionFromCall(call.replace("addListener", "removeListener"));
 
-        console.log("Adding background listener", self, call, listenerFunction);
+        // console.log("Adding background listener", self, call, listenerFunction);
         const finalId = call + id;
         if (removeListenerFunction) {
             const existingListenerWithSameId = CrossContext.#backgroundListeners[finalId];
             if (existingListenerWithSameId) {
-                console.log("Removing existing listener with same ID", finalId, existingListenerWithSameId)
+                // console.log("Removing existing listener with same ID", finalId, existingListenerWithSameId)
                 removeListenerFunction(existingListenerWithSameId);
                 delete CrossContext.#backgroundListeners[finalId];
             }
@@ -67,7 +67,7 @@ class CrossContext {
         const fun = CrossContext.#getBackgroundFunctionFromCall(call);
         if (fun == null) return
 
-        console.log("Calling background function", self, call, fun)
+        // console.log("Calling background function", self, call, fun)
         const output = await fun(...input);
         await sendResponse(output);
     }
@@ -172,17 +172,17 @@ if (isServiceWorker) {
     var gcmTokenGetter = null;
     const getFromPending = async () => {
         const token = await gcmTokenGetter;
-        console.log("token", token);
+        // console.log("token", token);
         gcmTokenGetter = null;
         return token;
     }
     chrome.instanceID.getToken = async function (...input) {
         if (gcmTokenGetter) {
-            console.log("getGCMToken using pending request")
+            // console.log("getGCMToken using pending request")
             return await getFromPending();
         }
 
-        console.log("getGCMToken using new request")
+        // console.log("getGCMToken using new request")
         gcmTokenGetter = originalGetToken(...input);
         return await getFromPending();
     }
