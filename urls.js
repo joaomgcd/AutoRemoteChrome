@@ -1,6 +1,6 @@
 class URLShortener{
 	static get all(){
-		return [new URLShortenerGoogl(),new URLShortenerFirebase()];
+		return [new URLShortenerAutoRemote(),new URLShortenerGoogl(),new URLShortenerFirebase()];
 	}
 	static async expand(url){
 		const allExpanders = URLShortener.all;
@@ -48,5 +48,14 @@ class URLShortenerFirebase extends URLShortener{
 	}
 	get prefix(){
 		return "autoremote.joaoapps.com";
+	}
+}
+class URLShortenerAutoRemote extends URLShortener{
+	async expandSpecific(shortUrl){
+		const fetchResult = await fetch(shortUrl);
+        return fetchResult.url;
+	}
+	get prefix(){
+		return "autoremotejoaomgcd.appspot.com";
 	}
 }

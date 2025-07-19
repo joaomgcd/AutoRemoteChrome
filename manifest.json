@@ -2,7 +2,7 @@
     "update_url": "https://clients2.google.com/service/update2/crx",
     "name": "AutoRemote",
     "description": "Send and receive messages to and from your Android Device through AutoRemote",
-    "version": "1.6.0",
+    "version": "1.7.0",
     "content_security_policy": {
        "extension_pages": "script-src 'self'; object-src 'self'"
     },

@@ -219,24 +219,30 @@ async function getMyQrCode() {
 }
 
 var shortenUrl = function (url, callback) {
+    const autoremoteserver = "https://autoremotejoaomgcd.appspot.com";
     var req = new XMLHttpRequest();
-    //req.open("POST", "https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyCA_Pv_hiwRxmMOuchBcjsJPgZOZXvgIdQ", true);
-    req.open("POST", "https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=AIzaSyCA_Pv_hiwRxmMOuchBcjsJPgZOZXvgIdQ", true);
+    // req.open("POST", "https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyCA_Pv_hiwRxmMOuchBcjsJPgZOZXvgIdQ", true);
+    // req.open("POST", "https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=AIzaSyCA_Pv_hiwRxmMOuchBcjsJPgZOZXvgIdQ", true);
+    req.open("POST",  `${autoremoteserver}/shorturl`, true);
     req.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
     req.onreadystatechange = function () {
         if (req.readyState == 4) {
             if (req.status == 200) {
                 var response = JSON.parse(req.responseText);
                 console.log(response);
-                callback(response.shortLink);
+                const shortUrlId = response.shortUrlId
+                callback(`${autoremoteserver}/${shortUrlId}`);
             }
         }
     };
+    // var objToSend = {
+    //     "dynamicLinkInfo": {
+    //         "domainUriPrefix": "https://autoremote.joaoapps.com",
+    //         "link": url
+    //     }
+    // };
     var objToSend = {
-        "dynamicLinkInfo": {
-            "domainUriPrefix": "https://autoremote.joaoapps.com",
-            "link": url
-        }
+        "longUrl": url
     };
     var jsonToSend = JSON.stringify(objToSend);
     req.send(jsonToSend);
@@ -337,13 +343,14 @@ async function getMyUrlAsync() {
     });
     return result;
 }
+const KEY_PERSONAL_URL = "personalurl2";
 function getMyUrl(callback) {
-    var storedUrl = localStorage["personalurl"];
+    var storedUrl = localStorage[KEY_PERSONAL_URL];
     if (storedUrl == null || storedUrl == "http://goo.gl/392otF") {
         getMyId(function (myId) {
             if (myId != null) {
                 shortenUrl(autoremoteserver + "/?key=" + myId, function (url) {
-                    localStorage["personalurl"] = url;
+                    localStorage[KEY_PERSONAL_URL] = url;
                     callback(url);
                 });
             } else {
@@ -467,7 +474,7 @@ function resetMyIds() {
 
     localStorage.removeItem("id");
     localStorage.removeItem("idgcm");
-    localStorage.removeItem("personalurl");
+    localStorage.removeItem(KEY_PERSONAL_URL);
 }
 function getIdFromLocalStorage() {
     return localStorage["id"];
@@ -1483,7 +1490,7 @@ var getCommunicationFromPayload = function (payload) {
     communication.fromJson(json)
     return communication;
 }
-var settingsToNotSave = ["id", "idgcm", "personalurl"];
+var settingsToNotSave = ["id", "idgcm", KEY_PERSONAL_URL];
 var saveSettingsToSync = function () {
     var objectSync = {};
     for (var prop in localStorage) {
